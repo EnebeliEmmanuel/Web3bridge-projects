@@ -15,16 +15,24 @@ const merkleTree = new MerkleTree(leafnodes, keccak256, {sortPairs: true})
 
 const rootHash = merkleTree.getRoot()
 
-console.log("stakeholder's merkle tree\n", merkleTree.toString())
+// console.log("stakeholder's merkle tree\n", merkleTree.toString())
+let multProof = []
+for(let i =0; i< stakeholders.length; i++){
 
-const test = keccak256("0x617F2E2fD72FD9D5503197092aC168c91465E7f2")
+    multProof.push(merkleTree.getHexProof(keccak256(stakeholders[i]).toString('Hex')))
 
-const hexProof = merkleTree.getHexProof(test);
+}
+
+console.log(multProof)
+const leaf = keccak256("0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2").toString('Hex')
+
+// console.log('the leaf', `0x${leaf}`)
+const hexProof = merkleTree.getHexProof(leaf);
 
 const buf2hex = x => '0x' + x.toString('hex')
 
 console.log("this is the root\n", buf2hex(rootHash))
-console.log("this is the proof\n", hexProof)
+// console.log("this is the proof\n", hexProof)
 
-console.log("testing a scenario")
-console.log(merkleTree.verify(hexProof,test,rootHash))
+console.log("leafing a scenario")
+console.log(merkleTree.verify(hexProof,leaf,rootHash))

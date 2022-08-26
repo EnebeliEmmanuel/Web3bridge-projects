@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 /// @notice imported contracts from openzepplin to pause, verify proof and upgrade contract
 
-import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol";
 
 
 
@@ -56,15 +56,6 @@ contract Web3BridgeElection {
     error ElectionNotStarted();
     error ElectionHasEnded();
 
-    constructor(bytes32 merkleRoot)  {
-        manager = msg.sender;
-        Active = false;
-        Ended = false;
-        Created = false;
-        candidatesCount = 0;
-        root = merkleRoot;
-        publicState = false;
-    }
 
 
   
@@ -106,6 +97,9 @@ contract Web3BridgeElection {
     ///@dev mapping to unsigned integers to struct of candidates
     mapping(uint256 => Candidate) public candidates;
 
+
+    mapping(address => bytes32[]) private stackholder;
+
     ///@notice variable to track winning candidate
     ///@dev an array that returns id of winning candidate(s)
     uint256[] public winnerIds;
@@ -134,6 +128,23 @@ contract Web3BridgeElection {
         uint256 voteCount;
     }
 
+
+    constructor(bytes32 merkleRoot)  {
+        manager = msg.sender;
+        Active = false;
+        Ended = false;
+        Created = false;
+        candidatesCount = 0;
+        root = merkleRoot;
+        publicState = false;
+    }
+
+ /**
+ *it allow you to add hexProof for each allowd stackholder
+*/
+    function addProof(address _stackholder, bytes32[] calldata _hexProof) public onlyManager {
+         stackholder[_stackholder] = _hexProof;
+    }
     
     ///================== PUBLIC FUNCTIONS =============================
 
@@ -152,13 +163,13 @@ contract Web3BridgeElection {
     ///@notice function that allows stakeholders vote in an election
     ///@param _candidateId the ID of the candidate and hexProof of the voting address
     ///@dev function verifies proof
-    function vote(uint256 _candidateId, bytes32[] calldata hexProof)
+    function vote(uint256 _candidateId)
         public
         electionIsStillOn
         electionIsActive
     {
         require(
-            isValid(hexProof, keccak256(abi.encodePacked(msg.sender))),
+            isValid(stackholder[msg.sender], keccak256(abi.encodePacked(msg.sender))),
             "sorry, only stakeholders are eligible to vote"
         );
 
@@ -197,10 +208,10 @@ contract Web3BridgeElection {
         publicState = true;
     }
 
-    function getWinner() public view  returns (uint256, uint256[] memory){
+    function getWinner() public view  returns (uint256, uint256[] memory, string memory){
         require(publicState, "The Results must be made public");
         
-        return (winnerVoteCount, winnerIds);
+        return (winnerVoteCount, winnerIds, candidates[winnerIds[0]].name);
 
     }
 
@@ -275,7 +286,8 @@ contract Web3BridgeElection {
     /// @notice function to end election
     ///@dev function changes the boolean value of the ENDED variable
     function endElection() public  onlyManager {
-        Ended = true;
+        Ended = !Ended;
+        Active = !Active;
         _calcElectionWinner();
         emit ElectionEnded(winnerIds, winnerVoteCount);
     }
