@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 /// @notice imported contracts from openzepplin to pause, verify proof and upgrade contract
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 
 
