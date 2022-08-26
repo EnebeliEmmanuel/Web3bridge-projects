@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/// @notice imported contracts from openzepplin to pause, verify proof and upgrade contract
+/// @notice imported contracts from openzepplin to pause, verify proof 
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
